@@ -1,0 +1,76 @@
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [citext, postgis]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+model User {
+  id              Int                                     @id @default(autoincrement())
+  email           String                                  @unique @db.Citext
+  password        String
+  CNIC            String?                                 @db.VarChar(16)
+  firstName       String
+  lastName        String
+  address         String?
+  location        Unsupported("geometry(Polygon, 4326)")?
+  profile_picture String?
+  createdAt       DateTime                                @default(now())
+  updatedAt       DateTime                                @updatedAt
+  deletedAt       DateTime?
+  isEmailVerified Boolean                                 @default(false)
+  userType        String
+  Athlete         Athlete?
+  Medico          Medico?
+  RefreshToken    RefreshToken[]
+
+  @@index([location], name: "location_idx", type: Gist)
+}
+
+model RefreshToken {
+  id          String   @id @unique @default(uuid())
+  hashedToken String
+  userId      Int
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Athlete {
+  id         Int       @unique
+  user       User      @relation(fields: [id], references: [id])
+  sport_name String?
+  BMI        Float?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+}
+
+model Medico {
+  id              Int          @unique
+  user            User         @relation(fields: [id], references: [id])
+  profession      String?
+  education       String?
+  consultationFee Float?
+  MedicoHours     MedicoHours?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  deletedAt       DateTime?
+}
+
+model MedicoHours {
+  id        Int       @id @default(autoincrement())
+  medicoId  Int       @unique
+  medico    Medico    @relation(fields: [medicoId], references: [id])
+  day       Int
+  startTime DateTime  @db.Time
+  endTime   DateTime  @db.Time
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
