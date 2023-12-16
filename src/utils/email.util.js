@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const mailConfigurations = (to) => {
+const mailConfigurations = (userName, to) => {
   const emailVerificationToken = generateEmailVerificationToken(to);
   const url = `http://${process.env.HOST}:${process.env.PORT}/verify/${emailVerificationToken}`;
   return {
@@ -27,21 +27,21 @@ const mailConfigurations = (to) => {
       `
     <html>
       <body>
-        <h3>Hello Zainab</h3>
+        <h3>Hello <%= userName %></h3>
         <p>Thanks for visiting our website. Please follow the given link to verify your email</p>
         <a href=<%= url %>>Click here to verify your email!</a>
         <p>Thanks</p>
       </body>
     </html>
   `,
-      { url }
+      { userName, url }
     )
   };
 };
 
-export const sendVerificationEmail = (to) => {
+export const sendVerificationEmail = (userName, to) => {
   transporter.sendMail(
-    mailConfigurations(to, (error, info) => {
+    mailConfigurations(userName, to, (error, info) => {
       if (error) {
         logger.error(error.message);
         throw new Error(error);

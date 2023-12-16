@@ -34,11 +34,11 @@ export const createRoleBasedUser = async (
   switch (userType.toLowerCase()) {
     case 'athlete':
       await createAthlete(email, password, firstName, lastName);
-      sendVerificationEmail(email);
+      sendVerificationEmail(firstName + ' ' + lastName, email);
       return;
     case 'medico':
       await createMedico(email, password, firstName, lastName);
-      sendVerificationEmail(email);
+      sendVerificationEmail(firstName + ' ' + lastName, email);
       break;
     default:
       throw new Error(authErrors.INVALID_USER_TYPE);

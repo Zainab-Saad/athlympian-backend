@@ -54,15 +54,15 @@ export const loginUser = async (req, res, next) => {
     const user = await getUserByEmail(email);
 
     if (!user) {
-      resFailure(res, authErrors.EMAIL_NOT_REGISTERED, {}, 403);
+      return resFailure(res, authErrors.EMAIL_NOT_REGISTERED, {}, 403);
     }
 
     if (!user.isEmailVerified) {
-      resFailure(res, authErrors.EMAIL_NOT_VERIFIED);
+      return resFailure(res, authErrors.EMAIL_NOT_VERIFIED);
     }
 
     if (!(await bcrypt.compare(password, user.password))) {
-      resFailure(res, authErrors.INCORRECT_PASSWORD, {}, 403);
+      return resFailure(res, authErrors.INCORRECT_PASSWORD, {}, 403);
     }
 
     const jwtid = v4();
@@ -83,6 +83,7 @@ export const loginUser = async (req, res, next) => {
     if (err.message === authErrors.INVALID_USER_TYPE) {
       return resFailure(res, authErrors.INVALID_USER_TYPE);
     }
+    next(err);
   }
 };
 
@@ -158,7 +159,7 @@ export const getMe = async (req, res, next) => {
     }
 
     if (!user.isEmailVerified) {
-      resFailure(res, authErrors.EMAIL_NOT_VERIFIED);
+      return resFailure(res, authErrors.EMAIL_NOT_VERIFIED);
     }
 
     const roleBasedUserData = await getRoleBasedUserData(
